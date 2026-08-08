@@ -1,0 +1,166 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+@source "./src/**/*.{js,jsx,ts,tsx}";
+@source "../node_modules/tccd-ui/dist/**/*.{js,jsx,ts,tsx}";
+
+@theme {
+  --color-dashboard-welcome-bg: #295e7e2e;
+  --color-dashboard-border: #f9f8f8;
+  --color-dashboard-card-border: #fafafa;
+  --color-dashboard-welcome-text: #9e999b;
+  --color-dashboard-user-name: #5c595e;
+  --color-dashboard-description: #a49ea1;
+  --color-dashboard-heading: #5c595e;
+  --color-dashboard-card-text: #8a8c8e;
+  --color-dashboard-icon: #ef4444;
+  --color-dashboard-event-time: #9e999b;
+  --color-pagination-active: #295e7e;
+  --color-pagination-disabled: rgba(41, 94, 126, 0.31);
+  --color-pagination-text: #87888b;
+  --color-primary: #cd3a38;
+  --color-secondary: #295e7e;
+  --color-contrast: #272727;
+  --color-background: #fff;
+  --color-text: #f8f8f8;
+  --color-muted-primary: #e9aaa9;
+  --color-muted-secondary: #babdc4;
+  --color-active-tab-bg: #f6f5f2;
+  --color-active-tab-text: #ea4c59;
+  --color-inactive-tab-text: #6b7280;
+  --color-label: #b3b3b3;
+  --color-error: #fb2c36;
+  --color-background-contrast: #e5e7eb;
+  --color-background-primary: #faebea;
+  --color-background-tertiary: #272727;
+  --color-page-gradient-start: #f3f4f6;
+  --color-page-gradient-middle: #ffffff;
+  --color-page-gradient-end: #e5e7eb;
+  --color-text-body-main: #1f2937;
+  --color-text-muted-foreground: #4b5563;
+  --color-text-title: #111827;
+  --color-text-subtitle: #374151;
+  --color-text-caption: #6b7280;
+  --color-surface-glass-bg: #ffffff;
+  --color-surface-glass-border: #000000;
+}
+
+.dark {
+  --color-dashboard-welcome-bg: #1f2937;
+  --color-dashboard-border: #374151;
+  --color-dashboard-card-border: #374151;
+  --color-dashboard-welcome-text: #e5e7eb;
+  --color-dashboard-user-name: #f3f4f6;
+  --color-dashboard-description: #d1d5db;
+  --color-dashboard-heading: #f9fafb;
+  --color-dashboard-card-text: #e5e7eb;
+  --color-dashboard-event-time: #d1d5db;
+  --color-pagination-active: #38bdf8;
+  --color-pagination-disabled: rgba(56, 189, 248, 0.31);
+  --color-pagination-text: #9ca3af;
+  --color-primary: #cd3a38;
+  --color-secondary: #295e7e;
+  --color-contrast: #f3f4f6;
+  --color-background: #0f172a;
+  --color-text: #f8fafc;
+  --color-muted-primary: #fecaca;
+  --color-muted-secondary: #94a3b8;
+  --color-active-tab-bg: #1e293b;
+  --color-active-tab-text: #f87171;
+  --color-inactive-tab-text: #9ca3af;
+  --color-label: #9ca3af;
+  --color-error: #ef4444;
+  --color-background-contrast: #1f2937;
+  --color-background-primary: #111827;
+  --color-background-tertiary: #212830;
+  --color-page-gradient-start: #111827;
+  --color-page-gradient-middle: #1f2937;
+  --color-page-gradient-end: #0f172a;
+  --color-text-body-main: #f9fafb;
+  --color-text-muted-foreground: #d7d9dd;
+  --color-text-title: #f3f4f6;
+  --color-text-subtitle: #d1d5db;
+  --color-text-caption: #c5c6c7;
+  --color-surface-glass-bg: #1f2937;
+  --color-surface-glass-border: #ffffff;
+}
+
+:root {
+  --font-sans:
+    "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --color-black: #121212;
+  --font-tag: 10px;
+  --font-tag-large: 1rem;
+}
+
+/* Shimmer Animation */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  transition:
+    background-color 0.5s ease,
+    color 0.5s ease;
+}
+
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Hide arrows for Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-track:hover {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-muted-secondary);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-secondary);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: var(--color-secondary);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
