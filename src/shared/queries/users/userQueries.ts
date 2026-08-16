@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import { UserApi } from "./userApi";
 import { useDispatch } from "react-redux";
 import {
@@ -96,6 +101,7 @@ export const useGetMembers = (params: {
   return useQuery({
     queryKey: [...userKeys.all, "members", params] as const,
     queryFn: () => userApiInstance.getMembers(params),
+    placeholderData: keepPreviousData, // <--- THIS IS THE MAGIC TRICK
   });
 };
 
@@ -103,7 +109,13 @@ export const useCreateUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({userData, password}: { userData: member; password?: string }) => userApiInstance.createUser(userData, password),
+    mutationFn: ({
+      userData,
+      password,
+    }: {
+      userData: member;
+      password?: string;
+    }) => userApiInstance.createUser(userData, password),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.all });
       toast.success("Member created successfully");
@@ -152,6 +164,6 @@ export const useDeleteAccount = () => {
 
 export const useSendQRCode = () => {
   return useMutation({
-    mutationFn: (userId: string) => userApiInstance.sendQRCode(userId)
+    mutationFn: (userId: string) => userApiInstance.sendQRCode(userId),
   });
 };

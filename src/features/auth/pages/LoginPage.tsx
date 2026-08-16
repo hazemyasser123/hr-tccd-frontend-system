@@ -27,11 +27,12 @@ const LoginPage = () => {
     }
   }
 
-  function validateForm(): boolean {
+  function validateForm(): LoginFormData | null {
     try {
-      loginSchema.parse(loginForm);
+      // parse() returns the trimmed and validated data
+      const parsedData = loginSchema.parse(loginForm);
       setErrors({});
-      return true;
+      return parsedData;
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors: Partial<Record<keyof LoginFormData, string>> = {};
@@ -42,20 +43,22 @@ const LoginPage = () => {
         });
         setErrors(fieldErrors);
       }
-      return false;
+      return null;
     }
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (!validateForm()) {
+    const validData = validateForm();
+    if (!validData) {
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await login(loginForm);
+      // Send the trimmed data to the API
+      await login(validData);
       setTimeout(() => {
         navigate("/");
       }, 1000);
@@ -123,7 +126,7 @@ const LoginPage = () => {
               type="primary"
               width="full"
               loading={isSubmitting}
-              onClick={() => {}}
+              onClick={() => { }}
             />
           </div>
           <footer className="p-10">
