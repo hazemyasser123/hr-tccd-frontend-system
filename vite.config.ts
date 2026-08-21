@@ -13,7 +13,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://test-prod.runasp.net",
+        target: "https://tccd-hr-system.runasp.net/",
         changeOrigin: true,
         secure: true,
       },
