@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://test-prod.runasp.net/api/:path*"
+      "destination": "https://tccd-hr-system.runasp.net/api/:path*"
     },
     {
       "source": "/(.*)",
