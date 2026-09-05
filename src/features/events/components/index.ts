@@ -1,6 +1,7 @@
 // Export all event-related components from this index file
 export { default as StatusBadge } from "./StatusBadge";
 export { default as VestStatusBadge } from "./VestStatusBadge";
+export { default as EventStatusBadge } from "./EventStatusBadge";
 export { default as EventDetailsHeader } from "./EventDetailsHeader";
 export { default as EventInformation } from "./EventInformation";
 export { default as VestEventInformation } from "./VestEventInformation";

@@ -11,7 +11,7 @@ import {
   logout as logoutAction,
 } from "@/shared/redux/slices/authSlice";
 import toast from "react-hot-toast";
-import type { member } from "@/shared/types/member";
+import type { User, Committee, Position } from "@/shared/types/user";
 
 export const userKeys = {
   all: ["user"] as const,
@@ -30,21 +30,29 @@ export const useLogin = () => {
   const dispatch = useDispatch();
 
   return useMutation({
-    mutationFn: (credentials: Parameters<typeof userApiInstance.login>[0]) =>
-      userApiInstance.login(credentials),
-    onSuccess: (data) => {
+    mutationFn: async (credentials: Partial<User>) => {
+      const loginResponse = await userApiInstance.login(credentials);
+      let partial: Partial<User> = (loginResponse?.data ?? {}) as Partial<User>;
+      try {
+        const sessionResponse = await userApiInstance.session();
+        partial = (sessionResponse?.data ?? partial) as Partial<User>;
+      } catch {
+        // fall back to whatever the login call returned
+      }
+      const normalized: User = {
+        id: partial.id ?? "",
+        email: partial.email ?? "",
+        name: partial.name ?? "",
+        profileImageUrl: partial.profileImageUrl ?? "",
+        phoneNumber: partial.phoneNumber,
+        committee: partial.committee,
+        roles: partial.roles ?? [],
+      };
+      return normalized;
+    },
+    onSuccess: (user) => {
       queryClient.invalidateQueries({ queryKey: userKeys.session() });
-      const {
-        id = "",
-        email = "",
-        name = "",
-        profileImageUrl = "",
-        phoneNumber = "",
-        roles = [],
-      } = data.data || {};
-      dispatch(
-        setUser({ id, email, name, profileImageUrl, phoneNumber, roles }),
-      );
+      dispatch(setUser(user));
       toast.success("Login successful! Welcome back!");
     },
     onError: () => {
@@ -94,76 +102,22 @@ export const useGetMembers = (params: {
   page: number;
   count: number;
   name?: string;
-  committee?: string;
+  committee?: Committee;
   graduationYear?: number;
-  position?: string;
+  position?: Position;
+  sortBy?: string;
 }) => {
   return useQuery({
     queryKey: [...userKeys.all, "members", params] as const,
     queryFn: () => userApiInstance.getMembers(params),
-    placeholderData: keepPreviousData, // <--- THIS IS THE MAGIC TRICK
+    placeholderData: keepPreviousData,
   });
 };
 
-export const useCreateUser = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      userData,
-      password,
-    }: {
-      userData: member;
-      password?: string;
-    }) => userApiInstance.createUser(userData, password),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: userKeys.all });
-      toast.success("Member created successfully");
-    },
-    onError: () => {
-      toast.error("Failed to create member");
-    },
-  });
-};
-
-export const useUpdateUser = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (params: { userId: string; userData: member }) =>
-      userApiInstance.updateUser(params.userId, params.userData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: userKeys.all });
-      toast.success("Member updated successfully");
-    },
-    onError: () => {
-      toast.error("Failed to update member");
-    },
-  });
-};
-
-export const useDeleteUser = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (userId: string) => userApiInstance.deleteUser(userId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: userKeys.all });
-    },
-  });
-};
-
-export const useDeleteAccount = () => {
-  return useMutation({
-    mutationFn: (userId: string) => userApiInstance.deleteAccount(userId),
-    onError: () => {
-      toast.error("Failed to delete system account");
-    },
-  });
-};
-
-export const useSendQRCode = () => {
-  return useMutation({
-    mutationFn: (userId: string) => userApiInstance.sendQRCode(userId),
+export const useGetQRCode = (userId: string) => {
+  return useQuery({
+    queryKey: [...userKeys.all, "qrCode", userId] as const,
+    queryFn: () => userApiInstance.getQRCode(userId),
+    enabled: !!userId,
   });
 };

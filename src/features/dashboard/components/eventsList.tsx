@@ -1,18 +1,24 @@
 import type { Event } from "@/shared/types/event";
 import EventCard from "./EventCard";
 import { useState } from "react";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/shared/redux/store/store";
 import { EventModal } from "@/features/events/components";
 import { useDeleteEvent } from "@/shared/queries/events/eventQueries";
 import DeleteEventModal from "./DeleteEventModal";
+import { isAdminLike } from "@/shared/utils/access";
 
 interface EventsListProps {
   events: Omit<Event, "attendees">[];
-  userRole?: string[];
 }
 
-const EventsList = ({ events, userRole = [] }: EventsListProps) => {
+const EventsList = ({ events }: EventsListProps) => {
   // Ensure events is always an array
   const eventsArray = Array.isArray(events) ? events : [];
+
+  // Admin-only edit/delete, decided by tier (not a raw role string).
+  const { user } = useSelector((state: RootState) => state.auth);
+  const isAdmin = isAdminLike(user);
 
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -21,8 +27,6 @@ const EventsList = ({ events, userRole = [] }: EventsListProps) => {
   const [eventIdToDelete, setEventIdToDelete] = useState<string | null>(null);
 
   const deleteEventMutation = useDeleteEvent();
-
-  const isAdmin = userRole.includes("Admin");
 
   const handleEdit = (eventId: string) => {
     const eventToEdit = eventsArray.find((event) => event.id === eventId);

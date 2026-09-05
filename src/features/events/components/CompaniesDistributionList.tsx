@@ -17,6 +17,7 @@ import EditCompanyCateringModal from "./EditCompanyCateringModal";
 import EditCompanyDataModal from "./EditCompanyDataModal";
 import SendCompanyEmailModal from "./SendCompanyEmailModal";
 import SendBulkCompanyEmailModal from "./SendBulkCompanyEmailModal";
+import { isAdminLike } from "@/shared/utils/access";
 
 interface CompaniesDistributionListProps {
   companies: Company[];
@@ -52,7 +53,8 @@ const CompaniesDistributionList = ({
   const [isSendBulkEmailModalOpen, setIsSendBulkEmailModalOpen] = useState(false);
 
   const { user } = useSelector((state: RootState) => state.auth);
-  const isAdmin = user?.roles.includes("Admin") || false;
+  // Admin-tier actions (Admin, VolunteerDirector/VP/President).
+  const isAdmin = isAdminLike(user);
 
   const { data: allItems } = useCompanyCateringItems();
   const deleteCompanyMutation = useDeleteCompany();

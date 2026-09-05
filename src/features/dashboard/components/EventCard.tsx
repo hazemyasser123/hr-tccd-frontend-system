@@ -10,6 +10,9 @@ import { IoTrashSharp } from "react-icons/io5";
 import { TbListDetails } from "react-icons/tb";
 import { FaEdit } from "react-icons/fa";
 import { BsQrCode } from "react-icons/bs";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/shared/redux/store/store";
+import { isHRCommittee } from "@/shared/utils/access";
 
 interface EventCardProps {
   event: Omit<Event, "attendees">;
@@ -21,6 +24,9 @@ const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete }) => {
   const { id, title, startDate, endDate, location } = event;
   const navigate = useNavigate();
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const { user } = useSelector((state: RootState) => state.auth);
+
+  const hideDetails = isHRCommittee(user);
   const now = new Date();
   const eventStart = new Date(startDate);
   const eventEnd = new Date(endDate);
@@ -88,7 +94,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete }) => {
         )}
 
         {/* Right side - Action buttons */}
-        {!isUpcomingEvent && (
+        {!isUpcomingEvent && !hideDetails && (
           <Button
             buttonText={isPhoneScreen ? undefined : "Details"}
             buttonIcon={isPhoneScreen ? <TbListDetails size={16} /> : undefined}

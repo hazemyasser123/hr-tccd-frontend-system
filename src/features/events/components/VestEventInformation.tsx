@@ -3,6 +3,7 @@ import { format } from "@/shared/utils";
 import { ButtonTypes, ButtonWidths, Button } from "tccd-ui";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/shared/redux/store/store";
+import { isAdminLike } from "@/shared/utils/access";
 
 interface VestEventInformationProps {
   event: Event;
@@ -18,8 +19,8 @@ const VestEventInformation = ({
   onDelete,
 }: VestEventInformationProps) => {
   const { user } = useSelector((state: RootState) => state.auth);
-  const userRole = user?.roles || [];
-  const isAdmin = userRole.includes("Admin");
+  // Admin-tier edit/delete (Admin, VolunteerDirector/VP/President).
+  const isAdmin = isAdminLike(user);
   return (
     <div className="bg-white dark:bg-surface-glass-bg rounded-lg shadow-sm border border-dashboard-card-border p-4 sm:p-6 mb-4 sm:mb-6">
       <div className="flex justify-between items-start mb-3 sm:mb-4">

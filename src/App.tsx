@@ -3,7 +3,7 @@ import routes from "@/shared/routing/Routes";
 import { Toaster } from "react-hot-toast";
 import MemberRoute from "@/shared/routing/ProtectedRoutes";
 import { useEffect, useState } from "react";
-import { setDarkModeConfig,  } from "tccd-ui";
+import { setDarkModeConfig, } from "tccd-ui";
 
 function App() {
   const [isDark, setIsDark] = useState(() => {
@@ -51,13 +51,13 @@ function App() {
         />
         <Routes>
           {routes.map(
-            ({ path, Component, protected: isProtected, roles }, index) =>
+            ({ path, Component, protected: isProtected, roles, committees }, index) =>
               isProtected ? (
                 <Route
                   key={index}
                   path={path}
                   element={
-                    <MemberRoute allowedRoles={roles}>
+                    <MemberRoute allowedRoles={roles} allowedCommittees={committees}>
                       <Component />
                     </MemberRoute>
                   }

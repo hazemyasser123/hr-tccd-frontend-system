@@ -4,27 +4,41 @@ import { useState, useEffect } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useAllEvents, useDeleteEvent } from "@/shared/queries/events";
 import EVENT_TYPES from "@/constants/eventTypes";
+import EVENT_STATUSES from "@/constants/eventStatuses";
 import Table from "@/shared/components/table/Table";
 import CardView from "@/shared/components/table/CardView";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import type { Event } from "@/shared/types/event";
+import type { RootState } from "@/shared/redux/store/store";
+import { isAdminLike } from "@/shared/utils/access";
 import { IoTrashSharp } from "react-icons/io5";
 import { FaEdit } from "react-icons/fa";
 import { TbListDetails } from "react-icons/tb";
+import EventStatusBadge from "./EventStatusBadge";
+
+const getEventStatus = (
+  startDate: string,
+  endDate: string,
+): "Upcoming" | "Running" | "Past" => {
+  const now = new Date();
+  if (now >= new Date(endDate)) return "Past";
+  if (now < new Date(startDate)) return "Upcoming";
+  return "Running";
+};
 
 const EventList = ({
-  setModalOpen,
-  fetchedEventStatuses,
+  onEdit,
 }: {
-  setModalOpen?: React.Dispatch<React.SetStateAction<string>>;
-  fetchedEventStatuses: string[];
+  onEdit?: (event: Event) => void;
 }) => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchKey, setSearchKey] = useState<string>("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchKey);
-  const userRoles = useSelector((state: any) => state.auth.user?.roles || []);
+  const { user } = useSelector((state: RootState) => state.auth);
+  // Admin-tier edit/delete (Admin, VolunteerDirector/VP/President).
+  const isAdmin = isAdminLike(user);
 
   const deleteEventMutation = useDeleteEvent();
 
@@ -52,6 +66,17 @@ const EventList = ({
   }, [debouncedSearchTerm]);
 
   const [selectedEventType, setSelectedEventType] = useState<string>("");
+  const [selectedEventStatus, setSelectedEventStatus] = useState<string>("");
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedEventType, selectedEventStatus]);
+
+  const fetchedEventStatuses =
+    selectedEventStatus && selectedEventStatus !== "All"
+      ? [selectedEventStatus]
+      : [];
+
   const { data, isLoading, isError } = useAllEvents(
     currentPage,
     20,
@@ -103,6 +128,14 @@ const EventList = ({
           <div className="flex-col flex flex-1 justify-end md:flex-row gap-2">
             <div className="flex-grow md:max-w-64">
               <DropdownMenu
+                options={EVENT_STATUSES}
+                value={selectedEventStatus}
+                onChange={(val) => setSelectedEventStatus(val)}
+                placeholder="Event Status"
+              />
+            </div>
+            <div className="flex-grow md:max-w-64">
+              <DropdownMenu
                 options={EVENT_TYPES}
                 value={selectedEventType}
                 onChange={(val) => setSelectedEventType(val)}
@@ -131,17 +164,28 @@ const EventList = ({
             isSubmitting={deleteEventMutation.isPending}
             confirmationAction={handleDelete}
             columns={[
-              { key: "title", label: "Event Title", width: "w-1/3" },
+              { key: "title", label: "Event Title", width: "w-1/4" },
+              {
+                key: "startDate",
+                label: "Status",
+                width: "w-1/6",
+                formatter: (_value, item) =>
+                  item ? (
+                    <EventStatusBadge
+                      status={getEventStatus(item.startDate, item.endDate)}
+                    />
+                  ) : null,
+              },
               {
                 key: "startDate",
                 label: "Start Date",
-                width: "w-1/4",
+                width: "w-1/5",
                 formatter: (value) => new Date(value).toLocaleDateString(),
               },
               {
                 key: "endDate",
                 label: "End Date",
-                width: "w-1/4",
+                width: "w-1/5",
                 formatter: (value) => new Date(value).toLocaleDateString(),
               },
               { key: "location", label: "Location", width: "w-1/6" },
@@ -149,13 +193,11 @@ const EventList = ({
             emptyMessage="No events found."
             renderActions={(item, triggerDelete) => (
               <>
-                {userRoles.includes("Admin") && (
+                {isAdmin && (
                   <>
                     <Button
                       type="tertiary"
-                      onClick={() =>
-                        setModalOpen ? setModalOpen("edit") : () => {}
-                      }
+                      onClick={() => onEdit?.(item)}
                       buttonText="Edit"
                       width="fit"
                     />
@@ -186,6 +228,16 @@ const EventList = ({
             renderedFields={[
               {
                 key: "startDate",
+                label: "Status",
+                formatter: (_value, item) =>
+                  item ? (
+                    <EventStatusBadge
+                      status={getEventStatus(item.startDate, item.endDate)}
+                    />
+                  ) : null,
+              },
+              {
+                key: "startDate",
                 label: "Start Date",
                 formatter: (value) => new Date(value).toLocaleDateString(),
               },
@@ -202,13 +254,11 @@ const EventList = ({
             isSubmitting={deleteEventMutation.isPending}
             renderButtons={(item, triggerDelete) => (
               <>
-                {userRoles.includes("Admin") && (
+                {isAdmin && (
                   <>
                     <Button
                       type="tertiary"
-                      onClick={() =>
-                        setModalOpen ? setModalOpen("edit") : () => {}
-                      }
+                      onClick={() => onEdit?.(item)}
                       buttonIcon={<FaEdit size={16} />}
                       width="fit"
                     />

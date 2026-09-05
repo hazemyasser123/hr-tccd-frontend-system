@@ -1,6 +1,5 @@
-import type { member } from "@/shared/types/member";
 import { systemApi } from "../axiosInstance";
-import type { User } from "@/shared/types/user";
+import type { User, Committee, Position } from "@/shared/types/user";
 
 const LOGIN_ROUTE = "/v1/Auth/"; // <-- NO /api prefix here
 const USER_API_URL = "/users/"; // <-- NO /api prefix here
@@ -44,22 +43,44 @@ export class UserApi {
     page: number;
     count: number;
     name?: string;
-    committee?: string;
+    committee?: Committee;
     graduationYear?: number;
-    position?: string;
+    position?: Position; // Position enum value (GET /v1/Members filter)
+    sortBy?: string;
   }) {
     const queryParams: Record<string, string | number> = {
       Page: params.page,
       Count: params.count,
     };
-
     if (params.name) queryParams.Name = params.name;
-    if (params.committee && params.committee !== "All")
-      queryParams.Committee = params.committee;
+    if (params.committee) queryParams.Committee = params.committee;
     if (params.graduationYear)
       queryParams.GraduationYear = params.graduationYear;
-    if (params.position && params.position !== "All")
-      queryParams.Position = params.position;
+    if (params.position) queryParams.Position = params.position;
+    if (params.sortBy) {
+      queryParams.SortBy = params.sortBy;
+      switch (params.sortBy) {
+        case "az":
+          queryParams.OrderBy = "FullName";
+          queryParams.SortDirection = "Asc";
+          break;
+        case "za":
+          queryParams.OrderBy = "FullName";
+          queryParams.SortDirection = "Desc";
+          break;
+        case "caz":
+          queryParams.OrderBy = "Committee";
+          queryParams.SortDirection = "Asc";
+          break;
+        case "cza":
+          queryParams.OrderBy = "Committee";
+          queryParams.SortDirection = "Desc";
+          break;
+        default:
+          queryParams.OrderBy = params.sortBy;
+          break;
+      }
+    }
 
     const { data } = await systemApi.get(`/v1/Members`, {
       params: queryParams,
@@ -79,55 +100,10 @@ export class UserApi {
     };
   }
 
-  async createUser(userData: member, password?: string) {
-    const mappedData = {
-      fullName: userData.name,
-      email: userData.email,
-      phoneNumber: userData.phoneNumber,
-      committee: userData.committee,
-      position: userData.position,
-      nationalId: userData.nationalId,
-      major: userData.engineeringMajor,
-      educationSystem: userData.educationSystem,
-      graduationYear: userData.gradYear,
-      password: password,
-    };
-
-    const { data } = await systemApi.post(`/v1/Members`, mappedData);
-    return data;
-  }
-
-  async updateUser(userId: string, userData: member) {
-    const mappedData = {
-      fullName: userData.name,
-      email: userData.email,
-      phoneNumber: userData.phoneNumber,
-      committee: userData.committee,
-      position: userData.position,
-      nationalId: userData.nationalId,
-      major: userData.engineeringMajor,
-      educationSystem: userData.educationSystem,
-      graduationYear: userData.gradYear,
-    };
-
-    const { data } = await systemApi.put(`/v1/Members/${userId}`, mappedData);
-    return data;
-  }
-
-  async deleteUser(userId: string) {
-    const { data } = await systemApi.delete(`/v1/Members/${userId}`);
-    return data;
-  }
-
-  async deleteAccount(userId: string) {
-    const { data } = await systemApi.delete(
-      `/v1/Auth/delete-account/${userId}`,
-    );
-    return data;
-  }
-
-  async sendQRCode(userId: string) {
-    const { data } = await systemApi.post(`/v1/Members/qr-code/${userId}`);
-    return data;
+  async getQRCode(userId: string) {
+    const { data } = await systemApi.get(`/v1/Qr/${userId}`, {
+      responseType: "blob",
+    });
+    return URL.createObjectURL(data);
   }
 }

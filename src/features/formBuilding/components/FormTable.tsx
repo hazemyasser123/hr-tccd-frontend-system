@@ -8,6 +8,8 @@ import FormDeleteModal from "./FormDeleteModal";
 import { useModifyFormStatus } from "@/shared/queries/forms/formQueries";
 import { getErrorMessage } from "@/shared/utils";
 import { useSelector } from "react-redux";
+import type { RootState } from "@/shared/redux/store/store";
+import { isAdminLike } from "@/shared/utils/access";
 
 interface FormsTableProps {
   forms: form[];
@@ -15,7 +17,9 @@ interface FormsTableProps {
 
 const FormTable = ({ forms }: FormsTableProps) => {
   const navigate = useNavigate();
-  const userRoles = useSelector((state: any) => state.auth?.user.roles);
+  const { user } = useSelector((state: RootState) => state.auth);
+  // Admin-tier delete (Admin, VolunteerDirector/VP/President).
+  const isAdmin = isAdminLike(user);
   const [displayedForms, setDisplayedForms] = useState<form[]>(forms);
   const [showDeleteModal, setShowDeleteModal] = useState("");
   const modifyFormStatusMutation = useModifyFormStatus();
@@ -130,7 +134,7 @@ const FormTable = ({ forms }: FormsTableProps) => {
                           disabled={
                             modifyFormStatusMutation.isPending &&
                             modifyFormStatusMutation.variables?.formId ===
-                              form.id
+                            form.id
                           }
                           width="full"
                         />
@@ -144,13 +148,13 @@ const FormTable = ({ forms }: FormsTableProps) => {
                           disabled={
                             modifyFormStatusMutation.isPending &&
                             modifyFormStatusMutation.variables?.formId ===
-                              form.id
+                            form.id
                           }
                           width="full"
                         />
                       </div>
                     )}
-                    {userRoles.includes("Admin") && (
+                    {isAdmin && (
                       <Button
                         type={ButtonTypes.DANGER}
                         onClick={() => setShowDeleteModal(form.id)}

@@ -18,7 +18,9 @@ import { useNavigate } from "react-router-dom";
 import { LoadingPage, ErrorScreen, Button, ButtonTypes } from "tccd-ui";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import type { RootState } from "@/shared/redux/store/store";
 import { FormAccessList } from "@/features/formBuilding/components";
+import { isAdminLike } from "@/shared/utils/access";
 
 export default function FormEditor() {
   const navigate = useNavigate();
@@ -27,7 +29,9 @@ export default function FormEditor() {
   const templateId = searchParams.get("template") || "";
   const isEditMode = formId !== "new";
   const [isAccessListOpen, setIsAccessListOpen] = useState(false);
-  const userRoles = useSelector((state: any) => state.auth.user.roles);
+  const { user } = useSelector((state: RootState) => state.auth);
+  // Admin-tier access management (Admin, VolunteerDirector/VP/President).
+  const isAdmin = isAdminLike(user);
 
   const emptyForm: form = {
     id: "",
@@ -237,7 +241,7 @@ export default function FormEditor() {
             <h1 className="lg:text-[24px] text-[22px] font-bold dark:text-text-title">
               {isEditMode ? `Edit Form` : "Create New Form"}
             </h1>
-            {isEditMode && userRoles.includes("Admin") && (
+            {isEditMode && isAdmin && (
               <Button
                 type={ButtonTypes.SECONDARY}
                 onClick={() => setIsAccessListOpen(true)}

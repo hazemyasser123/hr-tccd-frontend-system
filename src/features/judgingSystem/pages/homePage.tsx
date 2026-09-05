@@ -6,28 +6,31 @@ import { useParams } from "react-router-dom";
 import { LoadingPage, ErrorScreen } from "tccd-ui";
 import { useState, Activity, useEffect } from "react";
 import { useSelector } from "react-redux";
+import type { RootState } from "@/shared/redux/store/store";
 import ConditionalWrapper from "@/shared/utils/conditionalWrapper";
 import logo from "@/assets/TCCD_logo.svg";
 import JudgesPage from "./JudgePage";
 import CertificatesTab from "../components/CertificatesTab";
+import { isAdminLike, isJudge as isJudgeRole } from "@/shared/utils/access";
 
 export default function JudgingSystemHomePage() {
   const { eventId } = useParams();
-  const userRoles = useSelector((state: any) => state.auth.user?.roles || []);
-  const isJudge = userRoles.includes("Judge") && userRoles.length === 1;
+  const { user } = useSelector((state: RootState) => state.auth);
+  // Judge view: Judge role and NOT admin-tier (was `roles.length === 1`).
+  const isJudge = isJudgeRole(user) && !isAdminLike(user);
   const [activeTab, setActiveTab] = useState<string>("teams");
   const { data: event, isLoading, isError } = useEvent(eventId!);
   const [hasInitializedTab, setHasInitializedTab] = useState(false);
 
   useEffect(() => {
     const storedTab = localStorage.getItem(`judgingSystemActiveTab_${eventId}`);
-    
+
     setActiveTab(storedTab || "teams");
     setHasInitializedTab(true);
   }, [eventId]);
 
   useEffect(() => {
-    if(!hasInitializedTab)
+    if (!hasInitializedTab)
       return;
 
     localStorage.setItem(`judgingSystemActiveTab_${eventId}`, activeTab);
@@ -58,9 +61,8 @@ export default function JudgingSystemHomePage() {
         <div className="flex flex-row justify-between mx-auto border-b-2 border-primary shadow-md w-full md:w-3/4 lg:w-2/3 mb-5 bg-surface-glass-bg">
           <div
             onClick={() => setActiveTab("teams")}
-            className={`flex-1 hover:bg-muted-primary/20 ${
-              activeTab === "teams" ? "bg-muted-primary/10" : "bg-transparent"
-            } transition-colors duration-200 ease-in-out py-4 md:py-5 shadow-lg flex items-center justify-center p-2 cursor-pointer border-r border-surface-glass-border/10`}
+            className={`flex-1 hover:bg-muted-primary/20 ${activeTab === "teams" ? "bg-muted-primary/10" : "bg-transparent"
+              } transition-colors duration-200 ease-in-out py-4 md:py-5 shadow-lg flex items-center justify-center p-2 cursor-pointer border-r border-surface-glass-border/10`}
           >
             <div className="text-text-body-main font-bold text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] leading-[10px] md:leading-[14px] font-inter text-center">
               Teams
@@ -68,11 +70,10 @@ export default function JudgingSystemHomePage() {
           </div>
           <div
             onClick={() => setActiveTab("questions")}
-            className={`flex-1 hover:bg-muted-primary/20 ${
-              activeTab === "questions"
+            className={`flex-1 hover:bg-muted-primary/20 ${activeTab === "questions"
                 ? "bg-muted-primary/10"
                 : "bg-transparent"
-            } transition-colors duration-200 ease-in-out shadow-lg flex items-center justify-center p-2 cursor-pointer border-r border-surface-glass-border/10`}
+              } transition-colors duration-200 ease-in-out shadow-lg flex items-center justify-center p-2 cursor-pointer border-r border-surface-glass-border/10`}
           >
             <div className="text-text-body-main font-bold text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] leading-[10px] md:leading-[14px] font-inter text-center">
               Criterion
@@ -81,11 +82,10 @@ export default function JudgingSystemHomePage() {
           {!isJudge && (
             <div
               onClick={() => setActiveTab("judges")}
-              className={`flex-1 hover:bg-muted-primary/20 ${
-                activeTab === "judges"
+              className={`flex-1 hover:bg-muted-primary/20 ${activeTab === "judges"
                   ? "bg-muted-primary/10"
                   : "bg-transparent"
-              } transition-colors duration-200 ease-in-out shadow-lg flex items-center justify-center p-2 cursor-pointer`}
+                } transition-colors duration-200 ease-in-out shadow-lg flex items-center justify-center p-2 cursor-pointer`}
             >
               <div className="text-text-body-main font-bold text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] leading-[10px] md:leading-[14px] font-inter text-center">
                 Judges
@@ -95,11 +95,10 @@ export default function JudgingSystemHomePage() {
           {
             <div
               onClick={() => setActiveTab("certificates")}
-              className={`flex-1 hover:bg-muted-primary/20 ${
-                activeTab === "certificates"
+              className={`flex-1 hover:bg-muted-primary/20 ${activeTab === "certificates"
                   ? "bg-muted-primary/10"
                   : "bg-transparent"
-              } transition-colors duration-200 ease-in-out shadow-lg flex items-center justify-center p-2 cursor-pointer`}
+                } transition-colors duration-200 ease-in-out shadow-lg flex items-center justify-center p-2 cursor-pointer`}
             >
               <div className="text-text-body-main font-bold text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] leading-[10px] md:leading-[14px] font-inter text-center">
                 Certificates

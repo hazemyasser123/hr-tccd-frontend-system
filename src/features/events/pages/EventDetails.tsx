@@ -29,15 +29,16 @@ import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import type { Event } from "@/shared/types/event";
 import type { RootState } from "@/shared/redux/store/store";
+import { isAdminLike, isCatering, isVest } from "@/shared/utils/access";
 
 const EventDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
+
   const { user } = useSelector((state: RootState) => state.auth);
-  const userRole = user?.roles;
-  const isAdmin = userRole?.includes("Admin") || false;
-  const isCateringAccount = userRole?.includes("Catering") || false;
+  // Tier-driven access (was raw role-string checks).
+  const isAdmin = isAdminLike(user);
+  const isCateringAccount = isCatering(user);
 
   const [activeTab, setActiveTab] = useState<
     "attendance" | "vest" | "catering" | "companies"
@@ -96,10 +97,10 @@ const EventDetails = () => {
     if (isAttendeesError && attendeesError) {
       toast.error("Failed to fetch event attendees, please try again");
     }
-    if (isVestAttendeesError && vestAttendeesError ) {
+    if (isVestAttendeesError && vestAttendeesError) {
       toast.error("Failed to fetch vest attendees, please try again");
     }
-    if (isCateringError && cateringError ) {
+    if (isCateringError && cateringError) {
       toast.error("Failed to fetch catering items, please try again");
     }
     if (isCompaniesError && companiesError) {
@@ -171,7 +172,7 @@ const EventDetails = () => {
     return <EventNotFound />;
   }
 
-  if (userRole && userRole.length === 1 && userRole[0] === "Vest") {
+  if (isVest(user) && !isAdminLike(user)) {
     return (
       <VestEventDetailsView
         event={event}
@@ -179,18 +180,17 @@ const EventDetails = () => {
         onBack={handleBack}
         onEdit={isAdmin ? handleEdit : undefined}
         onDelete={isAdmin ? handleDelete : undefined}
-        setAttendees={() => {}}
+        setAttendees={() => { }}
       />
     );
   }
-
   return (
     <WithNavbar>
       <div className="min-h-screen bg-background p-4 text-text-body-main">
         <div className="max-w-6xl mx-auto">
           {!isCateringAccount && (
-            <EventDetailsHeader 
-              onBack={handleBack} 
+            <EventDetailsHeader
+              onBack={handleBack}
               isAdmin={isAdmin}
               activeTab={activeTab}
               onTabChange={setActiveTab}
@@ -207,7 +207,6 @@ const EventDetails = () => {
             onDelete={isAdmin ? handleDelete : undefined}
             activeTab={activeTab}
           />
-          
           {/* Attendance Tab */}
           {activeTab === "attendance" && (
             <AttendeesList
@@ -221,7 +220,7 @@ const EventDetails = () => {
             <VestAttendeesList
               attendees={vestAttendees || []}
               eventId={event.id}
-              setAttendees={() => {}}
+              setAttendees={() => { }}
             />
           )}
 

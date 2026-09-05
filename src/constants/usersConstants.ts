@@ -1,3 +1,6 @@
+import { MEMBER_POSITIONS, COMMITTEE_VALUES } from "@/shared/types/user";
+import type { Position, Committee } from "@/shared/types/user";
+
 export const USERS_SORTING_OPTIONS = [
   { label: "Name (A-Z)", value: "az" },
   { label: "Name (Z-A)", value: "za" },
@@ -5,32 +8,37 @@ export const USERS_SORTING_OPTIONS = [
   { label: "Committee (Z-A)", value: "cza" },
 ];
 
-export const TEAM_COMMITTEES = [
+const POSITION_LABELS: Record<Position, string> = {
+  Member: "Member",
+  Head: "Head",
+  Director: "Director",
+  VicePresident: "Vice President",
+  President: "President",
+};
+
+export const POSITIONS: { label: string; value: Position }[] =
+  MEMBER_POSITIONS.map((value) => ({
+    label: POSITION_LABELS[value],
+    value,
+  }));
+
+const COMMITTEE_LABELS: Record<Committee, string> = {
+  Operations: "Operations",
+  HumanResources: "HR",
+  IT: "IT",
+  GraphicDesign: "Graphic Design",
+  ExternalRelations: "External Relations",
+  ContentCreation: "Content Creation",
+  Marketing: "Marketing",
+  VideoEditing: "Video Editing",
+  HighBoard: "High Board",
+  Outsource: "Outsource",
+};
+
+export const TEAM_COMMITTEES: { label: string; value: Committee | "All" }[] = [
   { label: "All Committees", value: "All" },
-  { label: "HR", value: "HumanResources" },
-  { label: "IT", value: "IT" },
-  { label: "Graphic Design", value: "GraphicDesign" },
-  { label: "External Relations", value: "ExternalRelations" },
-  { label: "Content Creation", value: "ContentCreation" },
-  { label: "Marketing", value: "Marketing" },
-  { label: "Video Editing", value: "VideoEditing" },
-  { label: "High Board", value: "HighBoard" },
-  { label: "Outsource", value: "Outsource" },
-];
-
-export const COMMITTEES_OPTIONS = TEAM_COMMITTEES.filter(
-  (c) => c.value !== "All",
-);
-
-export const EDUCATION_SYSTEMS = [
-  { label: "Mainstream", value: "Mainstream" },
-  { label: "Credit Hours", value: "Credit" },
-];
-
-export const POSITIONS = [
-  { label: "Member", value: "Member" },
-  { label: "Head", value: "Head" },
-  { label: "Director", value: "Director" },
-  { label: "President", value: "President" },
-  { label: "Vice President", value: "VicePresident" },
+  ...COMMITTEE_VALUES.map((value) => ({
+    label: COMMITTEE_LABELS[value],
+    value,
+  })),
 ];

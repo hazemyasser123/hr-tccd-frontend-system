@@ -11,6 +11,8 @@ import { IoTrashSharp } from "react-icons/io5";
 import { FaRegCopy } from "react-icons/fa6";
 import { FaEdit, FaLock, FaUnlock } from "react-icons/fa";
 import { useSelector } from "react-redux";
+import type { RootState } from "@/shared/redux/store/store";
+import { isAdminLike } from "@/shared/utils/access";
 
 interface FormCardViewProps {
   forms: form[];
@@ -18,7 +20,9 @@ interface FormCardViewProps {
 
 const FormCardView = ({ forms }: FormCardViewProps) => {
   const navigate = useNavigate();
-  const userRoles = useSelector((state: any) => state.auth?.user.roles);
+  const { user } = useSelector((state: RootState) => state.auth);
+  // Admin-tier delete (Admin, VolunteerDirector/VP/President).
+  const isAdmin = isAdminLike(user);
   const [showDeleteModal, setShowDeleteModal] = useState("");
   const [displayedForms, setDisplayedForms] = useState<form[]>(forms);
   const modifyFormStatusMutation = useModifyFormStatus();
@@ -134,7 +138,7 @@ const FormCardView = ({ forms }: FormCardViewProps) => {
                   width="fit"
                 />
               )}
-              {userRoles.includes("Admin") && (
+              {isAdmin && (
                 <Button
                   type={ButtonTypes.DANGER}
                   onClick={() => setShowDeleteModal(form.id || "")}

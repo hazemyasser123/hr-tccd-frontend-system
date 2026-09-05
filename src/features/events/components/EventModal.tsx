@@ -55,9 +55,11 @@ const EventModal = ({ isOpen, onClose, event, mode }: EventModalProps) => {
   const isLoading = addEventMutation.isPending || updateEventMutation.isPending;
 
   // Function to format datetime string for date and time inputs
-  const formatDateTimeForInput = (dateTimeString: string) => {
+  const formatDateTimeForInput = (dateTimeString?: string) => {
     try {
+      if (!dateTimeString) return { date: "", time: "" };
       const date = new Date(dateTimeString);
+      if (isNaN(date.getTime())) return { date: "", time: "" };
       const dateStr =
         date.getFullYear() +
         "-" +

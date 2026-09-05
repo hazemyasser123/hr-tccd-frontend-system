@@ -7,13 +7,16 @@ import type { Event } from "@/shared/types/event";
 import { format } from "@/shared/utils";
 import ConditionalWrapper from "@/shared/utils/conditionalWrapper";
 import { useSelector } from "react-redux";
+import type { RootState } from "@/shared/redux/store/store";
 import logo from "@/assets/TCCD_logo.svg";
+import { isAdminLike, isJudge as isJudgeRole } from "@/shared/utils/access";
 
 export default function EventSelectionPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const userRoles = useSelector((state: any) => state.auth.user?.roles || []);
-  const isJudge = userRoles.includes("Judge") && userRoles.length === 1;
-  const isAdmin = userRoles.includes("Admin");
+  const { user } = useSelector((state: RootState) => state.auth);
+  // Judge view: Judge role and NOT admin-tier (was `roles.length === 1`).
+  const isJudge = isJudgeRole(user) && !isAdminLike(user);
+  const isAdmin = isAdminLike(user);
 
   const [eventSearchTerm, setEventSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] =
@@ -89,11 +92,10 @@ export default function EventSelectionPage() {
                   {events?.map((event: Event) => (
                     <tr
                       key={event.id}
-                      className={`h-12 md:h-16 text-[13px] md:text-[14px] lg:text-[16px] whitespace-nowrap rounded-lg cursor-pointer ${
-                        selectedEvent === event.id
+                      className={`h-12 md:h-16 text-[13px] md:text-[14px] lg:text-[16px] whitespace-nowrap rounded-lg cursor-pointer ${selectedEvent === event.id
                           ? "bg-surface-glass-border/10"
                           : "hover:bg-surface-glass-border/5"
-                      }`}
+                        }`}
                       onClick={() => setSelectedEvent(event.id)}
                     >
                       <td className="px-3 py-2 text-text-body-main">
@@ -115,11 +117,10 @@ export default function EventSelectionPage() {
         </div>
         <div className="flex justify-center items-center gap-3 mt-4">
           <FaChevronLeft
-            className={`cursor-pointer size-4 ${
-              currentPage === 1
+            className={`cursor-pointer size-4 ${currentPage === 1
                 ? "text-text-muted-foreground/50 cursor-not-allowed"
                 : "text-text-title hover:text-primary"
-            }`}
+              }`}
             onClick={() => {
               if (currentPage > 1 && !isLoading) {
                 setCurrentPage(currentPage - 1);
@@ -130,11 +131,10 @@ export default function EventSelectionPage() {
             Page {currentPage}
           </span>
           <FaChevronRight
-            className={`cursor-pointer size-4 ${
-              events && events.length < 10
+            className={`cursor-pointer size-4 ${events && events.length < 10
                 ? "text-text-muted-foreground/50 cursor-not-allowed"
                 : "text-text-title hover:text-primary"
-            }`}
+              }`}
             onClick={() => {
               if (events && events.length === 10 && !isLoading) {
                 setCurrentPage(currentPage + 1);

@@ -12,6 +12,7 @@ import { useMemo, useState } from "react";
 import ManageCateringModal from "./ManageCateringModal";
 import AddCompanyModal from "./AddCompanyModal";
 import ManageCompanyCateringModal from "./ManageCompanyCateringModal";
+import { isAdminLike } from "@/shared/utils/access";
 
 interface EventInformationProps {
   event: Event;
@@ -37,8 +38,8 @@ const EventInformation = ({
   activeTab = "attendance",
 }: EventInformationProps) => {
   const { user } = useSelector((state: RootState) => state.auth);
-  const userRole = user?.roles || [];
-  const isAdmin = userRole.includes("Admin");
+  // Admin-tier actions (Admin, VolunteerDirector/VP/President).
+  const isAdmin = isAdminLike(user);
 
   const [isCateringModalOpen, setIsCateringModalOpen] = useState(false);
   const [isCompanyCateringModalOpen, setIsCompanyCateringModalOpen] =
@@ -226,71 +227,71 @@ const EventInformation = ({
       {/* Event Summary - Catering Tab */}
       {activeTab === "catering" && (
         <>
-        {cateringData && cateringData.length > 0 ? (
-          <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-dashboard-border">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Catering Items</h3>
-              <Button
-                buttonText="Manage Items"
-                onClick={() => setIsCateringModalOpen(true)}
-                type="primary"
-                width="auto"
-              />
-            </div>
-            <div className="space-y-3">
-              {Object.entries(
-                cateringData.reduce((acc: Record<string, { itemName: string; total: number; remaining: number }>, item) => {
-                  if (!acc[item.cateringItemId]) {
-                    acc[item.cateringItemId] = {
-                      itemName: item.itemName,
-                      total: 0,
-                      remaining: 0,
-                    };
-                  }
-                  acc[item.cateringItemId].total += item.amount;
-                  acc[item.cateringItemId].remaining += item.remainingAmount;
-                  return acc;
-                }, {})
-              ).map(([itemId, itemData]) => {
-                const used = itemData.total - itemData.remaining;
-                return (
-                  <div key={itemId} className="rounded-lg p-3 sm:p-4 shadow-sm border border-gray-200 dark:border-gray-600">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-800 dark:text-gray-100 mb-2">{itemData.itemName}</h4>
-                        <div className="grid grid-cols-3 gap-2 text-sm">
-                          <div className="bg-blue-50 dark:bg-blue-800/40 rounded p-2">
-                            <div className="font-bold text-blue-600 dark:text-blue-300">{itemData.total}</div>
-                            <div className="text-xs text-blue-500 dark:text-blue-200">Total</div>
-                          </div>
-                          <div className="bg-red-50 dark:bg-red-800/40 rounded p-2">
-                            <div className="font-bold text-red-600 dark:text-red-300">{used}</div>
-                            <div className="text-xs text-red-500 dark:text-red-200">Used</div>
-                          </div>
-                          <div className="bg-green-50 dark:bg-green-800/40 rounded p-2">
-                            <div className="font-bold text-green-600 dark:text-green-300">{itemData.remaining}</div>
-                            <div className="text-xs text-green-500 dark:text-green-200">Remaining</div>
+          {cateringData && cateringData.length > 0 ? (
+            <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-dashboard-border">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Catering Items</h3>
+                <Button
+                  buttonText="Manage Items"
+                  onClick={() => setIsCateringModalOpen(true)}
+                  type="primary"
+                  width="auto"
+                />
+              </div>
+              <div className="space-y-3">
+                {Object.entries(
+                  cateringData.reduce((acc: Record<string, { itemName: string; total: number; remaining: number }>, item) => {
+                    if (!acc[item.cateringItemId]) {
+                      acc[item.cateringItemId] = {
+                        itemName: item.itemName,
+                        total: 0,
+                        remaining: 0,
+                      };
+                    }
+                    acc[item.cateringItemId].total += item.amount;
+                    acc[item.cateringItemId].remaining += item.remainingAmount;
+                    return acc;
+                  }, {})
+                ).map(([itemId, itemData]) => {
+                  const used = itemData.total - itemData.remaining;
+                  return (
+                    <div key={itemId} className="rounded-lg p-3 sm:p-4 shadow-sm border border-gray-200 dark:border-gray-600">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-800 dark:text-gray-100 mb-2">{itemData.itemName}</h4>
+                          <div className="grid grid-cols-3 gap-2 text-sm">
+                            <div className="bg-blue-50 dark:bg-blue-800/40 rounded p-2">
+                              <div className="font-bold text-blue-600 dark:text-blue-300">{itemData.total}</div>
+                              <div className="text-xs text-blue-500 dark:text-blue-200">Total</div>
+                            </div>
+                            <div className="bg-red-50 dark:bg-red-800/40 rounded p-2">
+                              <div className="font-bold text-red-600 dark:text-red-300">{used}</div>
+                              <div className="text-xs text-red-500 dark:text-red-200">Used</div>
+                            </div>
+                            <div className="bg-green-50 dark:bg-green-800/40 rounded p-2">
+                              <div className="font-bold text-green-600 dark:text-green-300">{itemData.remaining}</div>
+                              <div className="text-xs text-green-500 dark:text-green-200">Remaining</div>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-dashboard-border flex flex-col items-center text-dashboard-description">
-            No catering items allocated for this event.
-            <Button
-              buttonText="Allocate Catering"
-              onClick={() => setIsCateringModalOpen(true)}
-              type="primary"
-              width="auto"
-              className="mt-3"
-            />
-          </div>
-        )}
+          ) : (
+            <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-dashboard-border flex flex-col items-center text-dashboard-description">
+              No catering items allocated for this event.
+              <Button
+                buttonText="Allocate Catering"
+                onClick={() => setIsCateringModalOpen(true)}
+                type="primary"
+                width="auto"
+                className="mt-3"
+              />
+            </div>
+          )}
         </>
       )}
 

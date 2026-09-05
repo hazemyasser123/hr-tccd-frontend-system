@@ -3,8 +3,9 @@ import { useState } from "react";
 import { loginSchema, type LoginFormData } from "@/shared/schemas/authSchemas";
 import { z } from "zod";
 import { useLogin } from "@/shared/queries/users/userQueries";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button, InputField, PasswordField } from "tccd-ui";
+import { getPostLoginRedirect } from "@/shared/utils/access";
 
 const LoginPage = () => {
   const [loginForm, setLoginForm] = useState<LoginFormData>({
@@ -29,7 +30,6 @@ const LoginPage = () => {
 
   function validateForm(): LoginFormData | null {
     try {
-      // parse() returns the trimmed and validated data
       const parsedData = loginSchema.parse(loginForm);
       setErrors({});
       return parsedData;
@@ -57,10 +57,9 @@ const LoginPage = () => {
 
     setIsSubmitting(true);
     try {
-      // Send the trimmed data to the API
-      await login(validData);
+      const response = await login(validData);
       setTimeout(() => {
-        navigate("/");
+        navigate(getPostLoginRedirect(response ?? null));
       }, 1000);
     } catch (error) {
       console.error(error);
@@ -129,10 +128,25 @@ const LoginPage = () => {
               onClick={() => { }}
             />
           </div>
-          <footer className="p-10">
+          <footer className="p-10 space-y-3">
             <p className="text-center text-sm text-text-caption">
               HR accounts are created internally by administrators, If you
               require access, please contact your department head.
+            </p>
+            <p className="flex items-center justify-center gap-3 text-center text-sm">
+              <Link
+                to="/privacy-policy"
+                className="font-semibold text-primary hover:underline"
+              >
+                Privacy Policy
+              </Link>
+              <span className="text-text-caption">•</span>
+              <Link
+                to="/terms-of-use"
+                className="font-semibold text-primary hover:underline"
+              >
+                Terms of Service
+              </Link>
             </p>
           </footer>
         </section>

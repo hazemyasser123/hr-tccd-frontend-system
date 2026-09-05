@@ -14,8 +14,10 @@ import { useDeleteTeam } from "@/shared/queries/judgingSystem/judgeQueries";
 import { toast } from "react-hot-toast";
 import { getErrorMessage } from "@/shared/utils/errorHandler";
 import { useSelector } from "react-redux";
+import type { RootState } from "@/shared/redux/store/store";
 import { useNavigate } from "react-router-dom";
 import TeamStatusBadge from "./TeamStatusBadge";
+import { isAdminLike, isJudge as isJudgeRole } from "@/shared/utils/access";
 
 const TeamList = ({
   setModalOpen,
@@ -26,10 +28,11 @@ const TeamList = ({
 }) => {
   const eventId = useParams().eventId || "";
   const navigate = useNavigate();
-  const userRoles = useSelector((state: any) => state.auth.user?.roles || []);
+  const { user } = useSelector((state: RootState) => state.auth);
+  // Judge view: holds the Judge role AND is not admin-tier. (The old
+  // `roles.length === 1` heuristic misclassified e.g. Judge+VolunteerPresident.)
   const isJudge =
-    (userRoles.includes("Judge") && userRoles.length === 1) ||
-    manualMode === true;
+    (isJudgeRole(user) && !isAdminLike(user)) || manualMode === true;
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState<boolean>(false);
@@ -57,7 +60,7 @@ const TeamList = ({
   const handleConfirmDelete = (item: Team) => {
     deleteTeamMutation.mutate(item.id, {
       onSuccess: () => {
-        toast.success("Form deleted successfully");
+        toast.success("Team deleted successfully");
         setTimeout(() => {
           window.location.reload();
         }, 1000);
@@ -90,7 +93,7 @@ const TeamList = ({
     debouncedStatusKey,
     isJudge ? "judge" : "admin",
   );
-  
+
   const teamData = teams?.teams || [];
 
   return (
@@ -107,11 +110,10 @@ const TeamList = ({
           </p>
           <div className="flex gap-2 items-center justify-center">
             <FaChevronLeft
-              className={`cursor-pointer size-4 ${
-                !(teams && teams.hasPreviousPage)
+              className={`cursor-pointer size-4 ${!(teams && teams.hasPreviousPage)
                   ? "text-text-muted-foreground/50 cursor-not-allowed"
                   : "text-text-body-main hover:text-primary"
-              }`}
+                }`}
               onClick={() => {
                 if (currentPage > 1) {
                   setCurrentPage(currentPage - 1);
@@ -122,11 +124,10 @@ const TeamList = ({
               Page {currentPage}
             </span>
             <FaChevronRight
-              className={`cursor-pointer size-4 ${
-                !(teams && teams.hasNextPage)
+              className={`cursor-pointer size-4 ${!(teams && teams.hasNextPage)
                   ? "text-text-muted-foreground/50 cursor-not-allowed"
                   : "text-text-body-main hover:text-primary"
-              }`}
+                }`}
               onClick={() => {
                 if (teams && teams.hasNextPage) {
                   setCurrentPage(currentPage + 1);
@@ -211,10 +212,10 @@ const TeamList = ({
                 },
                 !isJudge
                   ? {
-                      key: "totalScore" as keyof Team,
-                      label: "Total Score",
-                      width: "w-1/6",
-                    }
+                    key: "totalScore" as keyof Team,
+                    label: "Total Score",
+                    width: "w-1/6",
+                  }
                   : undefined,
               ].filter(Boolean) as {
                 key: keyof Team;

@@ -1,2 +1,2 @@
 export { default as EventDetails } from './EventDetails';
-export { default as PastEventsPage } from './PastEventsPage';
+export { default as EventsPage } from './EventsPage';
