@@ -21,6 +21,17 @@ const QRCodePage = () => {
     const attendeeBadgeLabel = (
         user?.roles?.find((role) => ATTENDEE_ROLES.includes(role)) ?? "VolunteerMember"
     ).replace(/([a-z])([A-Z])/g, "$1 $2");
+
+    const volunteerRole = user?.roles?.find((r) => r.startsWith("Volunteer"));
+    const committeeLabel = user?.committee?.replace(/([a-z])([A-Z])/g, "$1 $2");
+    const positionLabel = volunteerRole
+        ?.replace("Volunteer", "")
+        .replace(/([a-z])([A-Z])/g, "$1 $2");
+    const orgBadgeLabel =
+        committeeLabel && positionLabel
+            ? `${positionLabel} • ${committeeLabel}`
+            : committeeLabel ?? null;
+
     const {
         data: apiResponseData,
         isLoading,
@@ -110,7 +121,11 @@ const QRCodePage = () => {
                             {isVolunteer ? (
                                 <span className="px-3 py-1 text-xs font-semibold rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center gap-1.5">
                                     <FaShieldAlt size={12} />
-                                    {attendeeBadgeLabel}
+                                    {orgBadgeLabel ?? attendeeBadgeLabel}
+                                </span>
+                            ) : orgBadgeLabel ? (
+                                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-secondary/10 text-secondary border border-secondary/20">
+                                    {orgBadgeLabel}
                                 </span>
                             ) : (
                                 user.roles?.map((role) => (

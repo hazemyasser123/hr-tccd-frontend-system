@@ -58,7 +58,7 @@ export const getPostLoginRedirect = (user: MaybeUser): string => {
 };
 
 export const getNavItems = (user: MaybeUser): NavItem[] => {
-  if (!user) return [QR_NAV_ITEM];
+  if (!user) return [];
   if (isAdminLike(user)) return NAV_ITEMS;
   if (isJudge(user)) return [JUDGING_NAV_ITEM, QR_NAV_ITEM];
   if (isCatering(user))
