@@ -1,7 +1,12 @@
 import { useState } from "react";
 import type { MemberData } from "@/shared/types/attendance";
 import type { IDetectedBarcode } from "@yudiel/react-qr-scanner";
-import { useRequestAttendance, useCheckAttendanceStatus, useRecordLateArrivalExcuse, useRecordLeaveEarly } from "@/shared/queries/events/eventQueries";
+import {
+  useRequestAttendance,
+  useCheckAttendanceStatus,
+  useRecordLateArrivalExcuse,
+  useRecordLeaveEarly,
+} from "@/shared/queries/events/eventQueries";
 import { UserApi } from "@/shared/queries/users";
 import { eventsApiInstance } from "@/shared/queries/events/eventApi";
 import { getErrorMessage } from "@/shared/utils";
@@ -12,13 +17,15 @@ export function useAttendanceFlow(eventId: string) {
   const [isScanning, setIsScanning] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [memberData, setMemberData] = useState<MemberData | null>(null);
-  const [companyData, setCompanyData] = useState<CompanyQRScanResponse | null>(null);
+  const [companyData, setCompanyData] = useState<CompanyQRScanResponse | null>(
+    null,
+  );
   const [attendanceStatus, setAttendanceStatus] = useState<number | null>(null);
   const [lateReason, setLateReason] = useState("");
   const [leaveExcuse, setLeaveExcuse] = useState("");
   const [isConfirming, setIsConfirming] = useState(false);
   const [attendanceConfirmed, setAttendanceConfirmed] = useState(false);
-  const [eventType,setEventType]=useState('')
+  const [eventType, setEventType] = useState("");
 
   const requestAttendance = useRequestAttendance();
   const checkAttendanceStatus = useCheckAttendanceStatus();
@@ -36,7 +43,7 @@ export function useAttendanceFlow(eventId: string) {
         memberId: userId,
         eventId,
       });
-      setEventType(eventResponse.eventType)
+      setEventType(eventResponse.eventType);
       setAttendanceStatus(res.status);
       const eventStartDate = new Date(eventResponse.startDate);
       const eventStartTime = eventStartDate.toLocaleTimeString("en-US", {
@@ -78,10 +85,10 @@ export function useAttendanceFlow(eventId: string) {
           // CompanyName: string
           // No need for any other data fetching
         } else if (parsedData && typeof parsedData.CompanyId === "string") {
-            setCompanyData({
-              companyId: parsedData.CompanyId,
-              companyName: parsedData.Name
-            })
+          setCompanyData({
+            companyId: parsedData.CompanyId,
+            companyName: parsedData.Name,
+          });
         } else {
           setError("Invalid QR code format. Expected a user or a company");
         }
@@ -106,19 +113,17 @@ export function useAttendanceFlow(eventId: string) {
   };
 
   // Confirm attendance
-  const confirmAttendance = async (reasonOverride?: string, excuseOverride?: string) => {
+  const confirmAttendance = async (
+    reasonOverride?: string,
+    excuseOverride?: string,
+  ) => {
     if (!memberData) return;
     setIsConfirming(true);
     const effectiveLateReason = reasonOverride ?? lateReason;
     const effectiveLeaveExcuse = excuseOverride ?? leaveExcuse;
     try {
-      if (attendanceStatus === 2002) {
+      if (attendanceStatus === 2002 && effectiveLateReason.trim()) {
         // Late
-        if (!effectiveLateReason.trim()) {
-          setError("Please provide a reason for being late.");
-          setIsConfirming(false);
-          return;
-        }
         await recordLateArrivalExcuse.mutateAsync({
           memberId: memberData.id,
           eventId,
@@ -126,18 +131,13 @@ export function useAttendanceFlow(eventId: string) {
         });
       } else if (attendanceStatus === 2003) {
         // Early leave
-        if (!effectiveLeaveExcuse.trim()) {
-          setError("Please provide a reason for early leave.");
-          setIsConfirming(false);
-          return;
-        }
         await recordLeaveEarly.mutateAsync({
           memberId: memberData.id,
           eventId,
           excuse: effectiveLeaveExcuse,
         });
       } else {
-        // On time
+        // On time or lateArrival without excuse
         await requestAttendance.mutateAsync({
           memberId: memberData.id,
           eventId,
@@ -145,7 +145,7 @@ export function useAttendanceFlow(eventId: string) {
       }
       setAttendanceConfirmed(true);
       toast.success("Attendance confirmed!");
-      setEventType('')
+      setEventType("");
     } catch (error) {
       setError(getErrorMessage(error));
     } finally {
@@ -182,6 +182,6 @@ export function useAttendanceFlow(eventId: string) {
     confirmAttendance,
     reset,
     setEventType,
-    eventType
+    eventType,
   };
 }

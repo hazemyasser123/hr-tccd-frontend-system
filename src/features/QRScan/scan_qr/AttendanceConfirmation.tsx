@@ -116,8 +116,8 @@ const AttendanceConfirmation = ({
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
             {attendanceStatus === 2002
-              ? "Reason for Late Arrival *"
-              : "Reason for Leaving Early *"}
+              ? "Reason for Late Arrival "
+              : "Reason for Leaving Early "}
           </label>
           <textarea
             id="reason-input"
@@ -129,15 +129,14 @@ const AttendanceConfirmation = ({
                 ? "Please provide a reason for late arrival..."
                 : "Please provide a reason for leaving early..."
             }
-            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 bg-white dark:bg-surface-glass-bg text-text-body-main ${
-              !(attendanceStatus === 2002 ? lateReason : leaveExcuse).trim()
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 bg-white dark:bg-surface-glass-bg text-text-body-main ${attendanceStatus === 2002 && !lateReason.trim()
                 ? "border-red-300 dark:border-red-800 focus:ring-red-500 focus:border-red-500"
                 : "border-gray-300 dark:border-surface-glass-border/20 focus:ring-blue-500 focus:border-blue-500"
-            }`}
+              }`}
             rows={4}
             maxLength={500}
           />
-          {!(attendanceStatus === 2002 ? lateReason : leaveExcuse).trim() && (
+          {attendanceStatus === 2002 && !lateReason.trim() && (
             <p className="mt-1 text-sm text-red-600">
               Reason is required for{" "}
               {attendanceStatus === 2002 ? "late attendance" : "early leave"}

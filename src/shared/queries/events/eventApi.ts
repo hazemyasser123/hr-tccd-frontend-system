@@ -8,18 +8,33 @@ class eventsApi {
     const response = await systemApi.get(`${EVENTS_API_URL}Events/${id}`);
     return response.data.data;
   }
-  
-  async fetchAllEvents(page: number, pageSize: number,eventType: string, title: string, eventStatuses: string[]): Promise<{items: Event[], totalCount: number, totalPages: number}> {
-    const statusParams = eventStatuses.map(status => `eventStatuses=${status}`).join('&');
-    const eventTypeParam = eventType && eventType !== "All" ? `eventType=${eventType}&` : "";
-    const response = await systemApi.get(`${EVENTS_API_URL}Events/filtered?${eventTypeParam}${statusParams}&page=${page}&count=${pageSize}&${title != "" ? `title=${title}` : ""}&OrderBy=startDate&Descending=true`);
-    return {items: response.data.data.data, totalCount: response.data.data.totalCount, totalPages: response.data.data.totalPages};
+
+  async fetchAllEvents(
+    page: number,
+    pageSize: number,
+    eventType: string,
+    title: string,
+    eventStatuses: string[],
+  ): Promise<{ items: Event[]; totalCount: number; totalPages: number }> {
+    const statusParams = eventStatuses
+      .map((status) => `eventStatuses=${status}`)
+      .join("&");
+    const eventTypeParam =
+      eventType && eventType !== "All" ? `eventType=${eventType}&` : "";
+    const response = await systemApi.get(
+      `${EVENTS_API_URL}Events/filtered?${eventTypeParam}${statusParams}&page=${page}&count=${pageSize}&${title != "" ? `title=${title}` : ""}&OrderBy=startDate&Descending=true`,
+    );
+    return {
+      items: response.data.data.data,
+      totalCount: response.data.data.totalCount,
+      totalPages: response.data.data.totalPages,
+    };
   }
 
   async createEvent(eventData: Omit<Event, "id">) {
     const response = await systemApi.post(
       EVENTS_API_URL + `Events/`,
-      eventData
+      eventData,
     );
     return response.data;
   }
@@ -27,21 +42,21 @@ class eventsApi {
   async updateEvent(eventId: string, eventData: Omit<Event, "id">) {
     const response = await systemApi.put(
       EVENTS_API_URL + `Events/${eventId}`,
-      eventData
+      eventData,
     );
     return response.data;
   }
 
   async deleteEvent(eventId: string) {
     const response = await systemApi.delete(
-      EVENTS_API_URL + `Events/${eventId}`
+      EVENTS_API_URL + `Events/${eventId}`,
     );
     return response.data;
   }
 
   async checkOngoingEvent(toDate: string): Promise<Event | null> {
     const response = await systemApi.get(
-      `${EVENTS_API_URL}Events/filtered?toDate=${toDate}`
+      `${EVENTS_API_URL}Events/filtered?toDate=${toDate}`,
     );
     const items = response.data.data?.items;
     return items && items.length > 0 ? items[0] : null;
@@ -49,7 +64,7 @@ class eventsApi {
 
   async fetchEventAttendees(eventId: string): Promise<Attendee[]> {
     const response = await systemApi.get(
-      `${EVENTS_API_URL}Attendance/${eventId}`
+      `${EVENTS_API_URL}Attendance/${eventId}`,
     );
 
     const items = Array.isArray(response.data?.data)
@@ -80,45 +95,53 @@ class eventsApi {
     return items;
   }
 
-  async updateVestStatus(memberId: string, eventId: string, action: "Returned" | "Received") {
-    await systemApi.put(
-      `${EVENTS_API_URL}Vest/status`,
-      { status: action, memberId: memberId, eventId: eventId }
-     );
+  async updateVestStatus(
+    memberId: string,
+    eventId: string,
+    action: "Returned" | "Received",
+  ) {
+    await systemApi.put(`${EVENTS_API_URL}Vest/status`, {
+      status: action,
+      memberId: memberId,
+      eventId: eventId,
+    });
   }
 
-  async fetchVestTimeline(memberId: string, eventId: string, pageNumber: number = 1, pageSize: number = 100) {
-    const response = await systemApi.get(
-      `${EVENTS_API_URL}Vest/activity`,
-      {
-        params: {
-          MemberId: memberId,
-          EventId: eventId,
-          PageNumber: pageNumber,
-          PageSize: pageSize
-        }
-      }
-    );
-    
+  async fetchVestTimeline(
+    memberId: string,
+    eventId: string,
+    pageNumber: number = 1,
+    pageSize: number = 100,
+  ) {
+    const response = await systemApi.get(`${EVENTS_API_URL}Vest/activity`, {
+      params: {
+        MemberId: memberId,
+        EventId: eventId,
+        PageNumber: pageNumber,
+        PageSize: pageSize,
+      },
+    });
+
     // The API now returns member data with nested activities array
     // Extract the activities array from the first member (should only be one member matching the memberId)
     const memberData = response.data?.data?.data?.[0];
     if (memberData && Array.isArray(memberData.activities)) {
       return {
         ...response.data.data,
-        data: memberData.activities
+        data: memberData.activities,
       };
     }
-    
+
     // Return empty structure if no activities found
     return {
       ...response.data.data,
-      data: []
+      data: [],
     };
   }
-  
+
   async fetchVestStatus(memberId: string, eventId: string): Promise<string> {
-    const response = await systemApi.get(`${EVENTS_API_URL}Vest/status/${eventId}/${memberId}`
+    const response = await systemApi.get(
+      `${EVENTS_API_URL}Vest/status/${eventId}/${memberId}`,
     );
     return response.data.data.status;
   }
@@ -128,20 +151,20 @@ class eventsApi {
       EVENTS_API_URL + `Attendance/${eventId}/${memberId}`,
       {
         scanTime: new Date().toISOString(),
-      }
+      },
     );
     return response.data;
   }
 
   async checkAttendanceStatus(
     memberId: string,
-    eventId: string
+    eventId: string,
   ): Promise<{ status: number }> {
     const response = await systemApi.post(
       EVENTS_API_URL + `Attendance/${eventId}/${memberId}/status`,
       {
         scanTime: new Date().toISOString(),
-      }
+      },
     );
     return { status: response.data.data };
   }
@@ -149,7 +172,7 @@ class eventsApi {
   async recordLateArrivalExcuse(
     memberId: string,
     eventId: string,
-    excuse: string
+    excuse: string,
   ) {
     // Add 3 hours to current time and format as ISO string
     const now = new Date();
@@ -160,7 +183,7 @@ class eventsApi {
       {
         scanTime,
         execuse: excuse,
-      }
+      },
     );
     return response.data;
   }
@@ -175,7 +198,7 @@ class eventsApi {
       {
         scanTime,
         execuse: excuse,
-      }
+      },
     );
     return response.data;
   }

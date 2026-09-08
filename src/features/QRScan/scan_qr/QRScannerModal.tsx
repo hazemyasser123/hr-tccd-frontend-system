@@ -85,6 +85,10 @@ const QRScannerModal = ({ isOpen, onClose, event }: QRScannerModalProps) => {
     );
   };
 
+  const isAttendanceRecorded =
+    attendanceStatus === STATUS.ON_TIME ||
+    attendanceStatus === STATUS.LATE;
+
   const renderActionMenu = () => {
     const isLeavingEarly = attendanceStatus === STATUS.LEAVING_EARLY;
     return (
@@ -99,18 +103,26 @@ const QRScannerModal = ({ isOpen, onClose, event }: QRScannerModalProps) => {
             <div>
               <p className="font-semibold text-(--color-contrast) text-sm">Scan Attendance</p>
               <p className="text-xs text-dashboard-description">
-                {attendanceStatus === STATUS.LATE ? "Late arrival — reason required" : "Record check-in"}
+                {attendanceStatus === STATUS.LATE ? "Late arrival — reason Optional" : "Record check-in"}
               </p>
             </div>
           </button>
         ) : (
-          <button className={tileBase} onClick={() => setSelectedAction("earlyLeave")}>
+          <button
+            className={`${tileBase} disabled:opacity-50 disabled:cursor-not-allowed `}
+            onClick={() => setSelectedAction("earlyLeave")}
+            disabled={currentVestStatus == "Received"}
+          >
             <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
               <FaSignOutAlt className="text-primary" size={16} />
             </div>
             <div>
               <p className="font-semibold text-(--color-contrast) text-sm">Early Leave</p>
-              <p className="text-xs text-dashboard-description">Record early departure — reason required</p>
+              <p className="text-xs text-dashboard-description">
+                {currentVestStatus == "Received"
+                  ? "Return Vest First"
+                  : "Record early departure — reason Optional"}
+              </p>
             </div>
           </button>
         )}
@@ -128,10 +140,11 @@ const QRScannerModal = ({ isOpen, onClose, event }: QRScannerModalProps) => {
         <button
           className={`${tileBase} disabled:opacity-50`}
           onClick={handleVestToggle}
-          disabled={vestStatusUpdate.isPending}
+          disabled={vestStatusUpdate.isPending || isAttendanceRecorded}
         >
-          <div className="w-9 h-9 rounded-lg bg-secondary/10 flex items-center justify-center shrink-0">
-            <FaTag className="text-secondary" size={16} />
+          <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${currentVestStatus === "Received" ? "bg-primary/10" : "bg-secondary/10"
+            } `}>
+            <FaTag className={currentVestStatus === "Received" ? "text-primary" : "text-secondary"} size={16} />
           </div>
           <div>
             <p className="font-semibold text-(--color-contrast) text-sm">
@@ -168,7 +181,7 @@ const QRScannerModal = ({ isOpen, onClose, event }: QRScannerModalProps) => {
                 leaveExcuse=""
                 onScan={handleScan}
                 onError={(err) => console.error(err)}
-                onReasonChange={() => {}}
+                onReasonChange={() => { }}
                 onResetScanner={handleReset}
               />
               {!isScanning && !error && (
@@ -236,6 +249,7 @@ const QRScannerModal = ({ isOpen, onClose, event }: QRScannerModalProps) => {
         title="Late Arrival Notice"
         prompt="Please provide the reason for late arrival"
         initialReason={lateReason}
+        required={false}
       />
 
       <ReasonPopup
@@ -249,6 +263,7 @@ const QRScannerModal = ({ isOpen, onClose, event }: QRScannerModalProps) => {
         title="Early Leave Notice"
         prompt="Please provide the reason for early leave"
         initialReason={leaveExcuse}
+        required={false}
       />
 
       {memberData && (

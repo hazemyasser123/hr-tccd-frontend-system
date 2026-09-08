@@ -9,6 +9,7 @@ interface ReasonPopupProps {
   id?: string;
   label?: string;
   initialReason?: string;
+  required?: boolean;
   /** If provided, called on submit. Popup stays open until the promise resolves. */
   onSubmit?: (reason: string) => Promise<void>;
 }
@@ -21,6 +22,7 @@ export default function ReasonPopup({
   id = "reason-popup-textarea",
   label = "Reason",
   initialReason = "",
+  required = true,
   onSubmit,
 }: ReasonPopupProps) {
   const [reason, setReason] = useState<string>(initialReason);
@@ -36,7 +38,7 @@ export default function ReasonPopup({
   }
 
   async function handleSubmit() {
-    if (reason.trim() === "") return;
+    if (required && reason.trim() === "") return;
     if (onSubmit) {
       setIsSubmitting(true);
       try {
@@ -76,7 +78,7 @@ export default function ReasonPopup({
             buttonText={isSubmitting ? "Submitting..." : "Submit"}
             onClick={handleSubmit}
             type="primary"
-            disabled={reason.trim() === "" || isSubmitting}
+            disabled={required && reason.trim() === "" || isSubmitting}
             loading={isSubmitting}
           />
         </div>

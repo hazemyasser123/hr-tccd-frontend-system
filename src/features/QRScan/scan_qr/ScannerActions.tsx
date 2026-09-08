@@ -56,12 +56,12 @@ const ScannerActions = ({
   memberData,
   companyData,
   isConfirming,
-  lateReason,
+  // lateReason,
   onConfirmAttendance,
   onReturnToEvents,
   onResetScanner,
   attendanceStatus = null,
-  leaveExcuse = "",
+  // leaveExcuse = "",
   eventId,
 }: ScannerActionsProps) => {
   const vestStatusUpdate = useUpdateVestStatus();
@@ -97,8 +97,8 @@ const ScannerActions = ({
         onSuccess: () => {
           toast.success(
             currentVestStatus === "Received"
-            ? "Vest Returned Successfully!"
-            : "Vest Assigned Successfully!"
+              ? "Vest Returned Successfully!"
+              : "Vest Assigned Successfully!"
           );
           setCurrentVestStatus(action);
         },
@@ -124,13 +124,13 @@ const ScannerActions = ({
     return "Confirm Attendance";
   };
 
-  const isConfirmDisabled = () => {
+  // required excuse
+  /*  const isConfirmDisabled = () => {
     const isLate = attendanceStatus === STATUS.LATE;
     const isLeavingEarly = attendanceStatus === STATUS.LEAVING_EARLY;
     const reasonValue = isLate ? lateReason : leaveExcuse || "";
-
     return (isLate || isLeavingEarly) && !reasonValue.trim();
-  };
+  }; */
 
   // Render confirmed state
   if (attendanceConfirmed) {
@@ -161,7 +161,7 @@ const ScannerActions = ({
           onClick={onConfirmAttendance}
           type="secondary"
           width="full"
-          disabled={isConfirmDisabled()}
+          //disabled={isConfirmDisabled()}
           loading={isConfirming}
         />
         <Button
