@@ -18,6 +18,8 @@ export const eventKeys = {
   upcomingEvents: () => [...eventKeys.all, "upcoming"] as const,
   eventAttendees: (eventId: string) =>
     [...eventKeys.details(), eventId, "attendees"] as const,
+  vestEventAttendees: (eventId: string) =>
+    [...eventKeys.details(), eventId, "attendees", "vest"] as const,
   ongoingEvent: (toDate: string) => ["ongoing", toDate] as const,
   requestAttendance: (eventId: string, memberId: string) =>
     ["requestAttendance", eventId, memberId] as const,
@@ -261,16 +263,20 @@ export const useEventAttendees = (eventId: string, enabled: boolean = true) => {
         const data = await eventsApiInstance.fetchEventAttendees(eventId);
         return data;
       } catch (error) {
-        toast.error(getErrorMessage(error) || "Failed to fetch attendees. Please try again.");
+        toast.error(
+          getErrorMessage(error) ||
+            "Failed to fetch attendees. Please try again.",
+        );
         throw error;
       }
-     
     },
     enabled: !!eventId && enabled,
   });
 };
 
 export const useUpdateVestStatus = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async ({
       eventId,
@@ -291,6 +297,14 @@ export const useUpdateVestStatus = () => {
         throw error;
       }
     },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.vestEventAttendees(variables.eventId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.vestStatus(variables.eventId, variables.memberId),
+      });
+    },
   });
 };
 
@@ -300,10 +314,12 @@ export const useVestTimeline = (memberId: string, eventId: string) => {
     queryKey: eventKeys.vestTimeline(eventId, memberId),
     queryFn: async () => {
       try {
-        const data = await eventsApiInstance.fetchVestTimeline(memberId, eventId);
+        const data = await eventsApiInstance.fetchVestTimeline(
+          memberId,
+          eventId,
+        );
         return data;
-      }
-      catch (error) {
+      } catch (error) {
         toast.error(
           getErrorMessage(error) ||
             "Failed to fetch vest timeline. Please try again.",
@@ -317,7 +333,7 @@ export const useVestTimeline = (memberId: string, eventId: string) => {
 
 export const useVestStatus = (memberId: string, eventId: string) => {
   return useQuery({
-    queryKey: eventKeys.checkAttendanceStatus(eventId, memberId),
+    queryKey: eventKeys.vestStatus(eventId, memberId),
     queryFn: async () => {
       try {
         const data = await eventsApiInstance.fetchVestStatus(memberId, eventId);
@@ -339,7 +355,7 @@ export const useVestEventAttendees = (
   enabled: boolean = true,
 ) => {
   return useQuery({
-    queryKey: [...eventKeys.eventAttendees(eventId), "vest"],
+    queryKey: eventKeys.vestEventAttendees(eventId),
     queryFn: async () => {
       try {
         const data = await eventsApiInstance.fetchVestEventAttendees(eventId);

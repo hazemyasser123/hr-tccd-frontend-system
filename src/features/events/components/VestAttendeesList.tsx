@@ -120,6 +120,18 @@ const VestAttendeesList = ({
         })
       );
 
+      setDisplayedAttendees((currentAttendees) =>
+        currentAttendees.map((attendee) =>
+          attendee.id === modalState.attendee?.id
+            ? {
+              ...attendee,
+              status:
+                modalState.action === "assign" ? "Received" : "Returned",
+            }
+            : attendee
+        )
+      );
+
       toast.success(
         `Vest ${modalState.action === "assign" ? "assigned" : "returned"
         } successfully.`
