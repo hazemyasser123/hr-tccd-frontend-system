@@ -128,6 +128,15 @@ const LoginPage = () => {
               onClick={() => { }}
             />
           </div>
+          {/* Reset Password Link */}
+          <div className="flex justify-end mb-4 mt-1">
+            <Link
+              to="https://tccd.eng.cu.edu.eg/forgot-password"
+              className="text-[12px] md:text-[13px] font-semibold text-[#515151] hover:text-[#3B3D41] hover:underline transition-colors"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <footer className="p-10 space-y-3">
             <p className="text-center text-sm text-text-caption">
               HR accounts are created internally by administrators, If you
